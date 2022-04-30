@@ -6,9 +6,13 @@ option java_package = "br.com.darlan.grpc";
 package br.com.darlan.grpc;
 
 service ProductsService {
-    rpc Create(ProductServiceRequest) returns (ProductServiceResponse) {}
+    rpc Create (ProductServiceRequest) returns (ProductServiceResponse) {}
+    rpc FindById (FindByIdServiceRequest) returns (ProductServiceResponse) {}
 }
 
+message FindByIdServiceRequest {
+    int64 id = 1;
+}
 message ProductServiceRequest {
     string name = 1;
     double price = 2;
