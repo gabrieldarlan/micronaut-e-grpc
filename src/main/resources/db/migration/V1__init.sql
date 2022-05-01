@@ -7,3 +7,4 @@ CREATE TABLE PRODUCT (
 );
 
 insert into product(id, name, price, quantity_in_stock) values(1, 'Product A',10.99, 10);
+insert into product(id, name, price, quantity_in_stock) values(2, 'Product B',10.99, 10);

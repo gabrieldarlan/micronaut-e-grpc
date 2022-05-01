@@ -67,25 +67,29 @@ class ProductResources(
         request: ProductServiceUpdateRequest?,
         responseObserver: StreamObserver<ProductServiceResponse>?
     ) {
-        val payload = ValidationUtil.validateUpdatePayload(request)
-        val productReq = ProductUpdateReq(
-            id = payload.id,
-            name = payload.name,
-            price = payload.price,
-            quantityInStock = payload.quantityInStock
-        )
-        val productRes = productService.update(productReq)
+        try {
+            val payload = ValidationUtil.validateUpdatePayload(request)
+            val productReq = ProductUpdateReq(
+                id = payload.id,
+                name = payload.name,
+                price = payload.price,
+                quantityInStock = payload.quantityInStock
+            )
+            val productRes = productService.update(productReq)
 
-        val productServiceResponse = ProductServiceResponse.newBuilder()
-            .setId(productRes.id)
-            .setName(productRes.name)
-            .setPrice(productRes.price)
-            .setQuantityInStock(productRes.quantityInStock)
-            .build()
+            val productServiceResponse = ProductServiceResponse.newBuilder()
+                .setId(productRes.id)
+                .setName(productRes.name)
+                .setPrice(productRes.price)
+                .setQuantityInStock(productRes.quantityInStock)
+                .build()
 
-        responseObserver?.apply {
-            onNext(productServiceResponse)
-            onCompleted()
+            responseObserver?.apply {
+                onNext(productServiceResponse)
+                onCompleted()
+            }
+        } catch (e: BaseBusinessException) {
+            responseObserver?.onError(e.statusCode().toStatus().withDescription(e.errorMessage()).asRuntimeException())
         }
     }
 }
