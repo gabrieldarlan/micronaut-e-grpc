@@ -1,15 +1,15 @@
 package br.com.darlan.grpc.resources
 
-import br.com.darlan.grpc.FindByIdServiceRequest
 import br.com.darlan.grpc.ProductServiceRequest
 import br.com.darlan.grpc.ProductServiceUpdateRequest
 import br.com.darlan.grpc.ProductsServiceGrpc.ProductsServiceBlockingStub
+import br.com.darlan.grpc.RequestById
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.flywaydb.core.Flyway
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -61,7 +61,7 @@ internal class ProductResourcesTestIT(
 
     @Test
     fun `when ProductsServiceGrpc findById method is call with valid id a success is returned`() {
-        val request = FindByIdServiceRequest.newBuilder()
+        val request = RequestById.newBuilder()
             .setId(1)
             .build()
 
@@ -74,7 +74,7 @@ internal class ProductResourcesTestIT(
 
     @Test
     fun `when ProductsServiceGrpc findById method is call with invalid id a ProductNotFound is returned`() {
-        val request = FindByIdServiceRequest.newBuilder()
+        val request = RequestById.newBuilder()
             .setId(10)
             .build()
         val description = "Produto com ID ${request.id} não encontrado."
@@ -138,4 +138,30 @@ internal class ProductResourcesTestIT(
         assertEquals(description, response.status.description)
     }
 
+    @Test
+    fun `when ProductsServiceGrpc delete method is call with valid data a success is returned`() {
+        val request = RequestById.newBuilder()
+            .setId(2L)
+            .build()
+
+        assertDoesNotThrow {
+            productsServiceBlockingStub.delete(request)
+        }
+
+    }
+
+    @Test
+    fun `when ProductsServiceGrpc delete method is call with invalid id a ProductNotFound is returned`() {
+        val request = RequestById.newBuilder()
+            .setId(12L)
+            .build()
+
+        val description = "Produto com ID ${request.id} não encontrado."
+        val response = assertThrows(StatusRuntimeException::class.java) {
+            productsServiceBlockingStub.delete(request)
+        }
+
+        assertEquals(Status.NOT_FOUND.code, response.status.code)
+        assertEquals(description, response.status.description)
+    }
 }

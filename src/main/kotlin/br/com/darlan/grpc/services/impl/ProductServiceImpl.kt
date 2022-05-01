@@ -39,4 +39,10 @@ class ProductServiceImpl(
             throw AlreadyExistsException(name)
         }
     }
+
+    override fun delete(id: Long) {
+        productRepository.findById(id).orElseThrow { ProductNotFoundException(id) }.let {
+            productRepository.delete(it)
+        }
+    }
 }
