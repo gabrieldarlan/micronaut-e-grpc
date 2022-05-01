@@ -2,6 +2,7 @@ package br.com.darlan.grpc.services.impl
 
 import br.com.darlan.grpc.domain.Product
 import br.com.darlan.grpc.dto.ProductReq
+import br.com.darlan.grpc.dto.ProductUpdateReq
 import br.com.darlan.grpc.exceptions.AlreadyExistsException
 import br.com.darlan.grpc.exceptions.ProductNotFoundException
 import br.com.darlan.grpc.repository.ProductRepository
@@ -97,5 +98,65 @@ internal class ProductServiceImplTest {
         assertThrowsExactly(ProductNotFoundException::class.java) {
             productService.findById(id)
         }
+    }
+
+    @Test
+    fun `when update method is call with duplicated product-name, throws AlreadyExistsException`() {
+        val productInput = Product(
+            id = null,
+            name = "product name",
+            price = 10.00,
+            quantityInStock = 5
+        )
+        val productOutput = Product(
+            id = 1,
+            name = "product name",
+            price = 10.00,
+            quantityInStock = 5
+        )
+
+        `when`(productRepository.findByNameIgnoreCase(productInput.name)).thenReturn(productOutput)
+
+        val productReq = ProductUpdateReq(
+            id = 1L,
+            name = "product name",
+            price = 10.00,
+            quantityInStock = 5
+        )
+
+        assertThrowsExactly(AlreadyExistsException::class.java) {
+            productService.update(productReq)
+        }
+    }
+
+    @Test
+    fun `when update method is call with invalid id, throws ProductNotFoundException`() {
+        val productReq = ProductUpdateReq(
+            id = 1L,
+            name = "product name",
+            price = 10.00,
+            quantityInStock = 5
+        )
+
+        assertThrowsExactly(ProductNotFoundException::class.java) {
+            productService.update(productReq)
+        }
+    }
+
+
+    @Test
+    fun `when update method is call with valid data a ProductRes is returned`() {
+        val productInput = Product(id = 1, name = "updated product", price = 11.0, quantityInStock = 10)
+        val findByOutput = Product(id = 1, name = "product name", price = 10.0, quantityInStock = 5)
+
+        `when`(productRepository.findById(productInput.id!!)).thenReturn(Optional.of(findByOutput))
+
+        `when`(productRepository.update(productInput)).thenReturn(productInput)
+
+        val productUpdateReq = ProductUpdateReq(id = 1, name = "updated product", price = 11.0, quantityInStock = 10)
+
+        val productRes = productService.update(productUpdateReq)
+        assertEquals(productUpdateReq.name, productRes.name)
+
     }
 }
