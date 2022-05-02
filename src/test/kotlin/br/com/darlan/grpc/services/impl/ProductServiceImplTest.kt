@@ -2,6 +2,7 @@ package br.com.darlan.grpc.services.impl
 
 import br.com.darlan.grpc.domain.Product
 import br.com.darlan.grpc.dto.ProductReq
+import br.com.darlan.grpc.dto.ProductRes
 import br.com.darlan.grpc.dto.ProductUpdateReq
 import br.com.darlan.grpc.exceptions.AlreadyExistsException
 import br.com.darlan.grpc.exceptions.ProductNotFoundException
@@ -193,5 +194,32 @@ internal class ProductServiceImplTest {
         assertThrowsExactly(ProductNotFoundException::class.java) {
             productService.delete(id)
         }
+    }
+
+    @Test
+    fun `when findAll method is call a list of ProductRes is returned`() {
+        val productList = listOf(
+            Product(
+                id = 1,
+                name = "product name",
+                price = 10.0,
+                quantityInStock = 5
+            )
+        )
+        `when`(productRepository.findAll()).thenReturn(productList)
+
+        val productRes = productService.findAll()
+        assertEquals(productList[0].name, productRes[0].name)
+
+    }
+
+    @Test
+    fun `when findAll method is call without products a empty list of ProductRes is returned`() {
+        val productList = emptyList<ProductRes>()
+        `when`(productRepository.findAll()).thenReturn(emptyList())
+
+        val productRes = productService.findAll()
+        assertEquals(productList.size, productRes.size)
+
     }
 }

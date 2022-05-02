@@ -34,15 +34,19 @@ class ProductServiceImpl(
         }
     }
 
-    private fun verifyName(name: String) {
-        productRepository.findByNameIgnoreCase(name)?.let {
-            throw AlreadyExistsException(name)
-        }
-    }
-
     override fun delete(id: Long) {
         productRepository.findById(id).orElseThrow { ProductNotFoundException(id) }.let {
             productRepository.delete(it)
+        }
+    }
+
+    override fun findAll(): List<ProductRes> {
+       return productRepository.findAll().map { it.toProductRes() }
+    }
+
+    private fun verifyName(name: String) {
+        productRepository.findByNameIgnoreCase(name)?.let {
+            throw AlreadyExistsException(name)
         }
     }
 }

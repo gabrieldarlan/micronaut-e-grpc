@@ -1,5 +1,6 @@
 package br.com.darlan.grpc.resources
 
+import br.com.darlan.grpc.Empty
 import br.com.darlan.grpc.ProductServiceRequest
 import br.com.darlan.grpc.ProductServiceUpdateRequest
 import br.com.darlan.grpc.ProductsServiceGrpc.ProductsServiceBlockingStub
@@ -8,7 +9,6 @@ import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.flywaydb.core.Flyway
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -164,4 +164,15 @@ internal class ProductResourcesTestIT(
         assertEquals(Status.NOT_FOUND.code, response.status.code)
         assertEquals(description, response.status.description)
     }
+
+    @Test
+    fun `when ProductsServiceGrpc findAll method is call a list of Products is returned`() {
+        val request = Empty.newBuilder().build()
+        val response = productsServiceBlockingStub.findAll(request)
+
+        assertEquals("Product A", response.getProducts(0).name)
+        assertEquals("Product B", response.getProducts(1).name)
+    }
+
+
 }

@@ -6,6 +6,7 @@ import br.com.darlan.grpc.dto.ProductUpdateReq
 import br.com.darlan.grpc.exceptions.BaseBusinessException
 import br.com.darlan.grpc.services.ProductService
 import br.com.darlan.grpc.util.ValidationUtil
+import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import io.micronaut.grpc.annotation.GrpcService
 
@@ -39,6 +40,10 @@ class ProductResources(
             responseObserver?.onError(
                 ex.statusCode().toStatus().withDescription(ex.errorMessage()).asRuntimeException()
             )
+        } catch (ex: Throwable) {
+            responseObserver?.onError(
+                Status.UNKNOWN.code.toStatus().withDescription("Internal Server Error").asException()
+            )
         }
     }
 
@@ -59,6 +64,10 @@ class ProductResources(
         } catch (ex: BaseBusinessException) {
             responseObserver?.onError(
                 ex.statusCode().toStatus().withDescription(ex.errorMessage()).asRuntimeException()
+            )
+        } catch (ex: Throwable) {
+            responseObserver?.onError(
+                Status.UNKNOWN.code.toStatus().withDescription("Internal Server Error").asException()
             )
         }
     }
@@ -90,6 +99,10 @@ class ProductResources(
             }
         } catch (e: BaseBusinessException) {
             responseObserver?.onError(e.statusCode().toStatus().withDescription(e.errorMessage()).asRuntimeException())
+        } catch (ex: Throwable) {
+            responseObserver?.onError(
+                Status.UNKNOWN.code.toStatus().withDescription("Internal Server Error").asException()
+            )
         }
     }
 
@@ -103,6 +116,36 @@ class ProductResources(
             }
         } catch (e: BaseBusinessException) {
             responseObserver?.onError(e.statusCode().toStatus().withDescription(e.errorMessage()).asRuntimeException())
+        } catch (ex: Throwable) {
+            responseObserver?.onError(
+                Status.UNKNOWN.code.toStatus().withDescription("Internal Server Error").asException()
+            )
+        }
+    }
+
+    override fun findAll(request: Empty?, responseObserver: StreamObserver<ProductsList>?) {
+        try {
+            productService.findAll().let { productRes ->
+                productRes.map {
+                    ProductServiceResponse.newBuilder()
+                        .setId(it.id)
+                        .setName(it.name)
+                        .setPrice(it.price)
+                        .setQuantityInStock(it.quantityInStock)
+                        .build()
+                }.let { productListRest ->
+                    ProductsList.newBuilder().addAllProducts(productListRest).build()
+                }.let {
+                    responseObserver?.run {
+                        onNext(it)
+                        onCompleted()
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            responseObserver?.onError(
+                Status.UNKNOWN.code.toStatus().withDescription("Internal Server Error").asException()
+            )
         }
     }
 }

@@ -9,4 +9,6 @@ interface ProductService {
     fun findById(id: Long): ProductRes
     fun update(req: ProductUpdateReq): ProductRes
     fun delete(id: Long)
+    fun findAll(): List<ProductRes>
+
 }
